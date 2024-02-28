@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basispauschalierung gemäß § 17 EStG</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: grid;
+            grid-template-rows: auto 1fr auto; /* Footer will take remaining space */
+            min-height: 100vh; /* Ensure the body takes up at least the full viewport height */
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #564caf;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #aba1ff;
+        }
+        footer {
+            background-color: #414141;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
+        /* CSS-Stildefinition für das Modal-Popup */
+        .modal {
+            display: none; /* Das Popup standardmäßig ausblenden */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            margin: 0 auto; /* Top and bottom margins 0, left and right margins auto */
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: transparent;
+            margin: 15% auto; /* Center the popup */
+            padding: 20px;
+            border: none;
+            width: 80%; /* Width of the popup */
+        }
+        /* Update .close button styles */
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute; /* Position it absolutely within the .quiz-container */
+            top: 10px; /* Position from the top of .quiz-container */
+            right: 10px; /* Position from the right of .quiz-container */
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .help-icon {
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 10px;
+        }
+        .quiz-container {
+            position: relative; /* Add this line */
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 600px;
+            margin: 0 auto; /* Center horizontally */
+            display: block; /* Change to block when the popup is active */
+            /* Rest of your styles */
+        }
+        .question {
+            font-size: 1.2em;
+            padding-bottom: 20px;
+        }
+        .answers {
+            list-style: none;
+            padding: 0;
+        }
+        .answers li {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .answers li:hover {
+            background: #5c47d3;
+            color: #fff;
+        }
+        button.quiz-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #5c47d3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button.quiz-btn:hover {
+            background-color: #2e3cfa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 align="center">Basispauschalierung gemäß § 17 EStG</h1><br>
+        <h3>Freiberufliche oder gewerbliche Einkünfte aus:</h3>
+        <select id="kategorie_taetigkeit" name="kategorie_taetigkeit">
+            <option value="kaufmännisch">Kaufmännischer Beratung</option>
+            <option value="technisch">Technischer Beratung</option>
+            <option value="§ 22 Z 2">Vermögensverwaltende Tätigkeit</option>
+            <option value="schriftstellerisch">Schriftstellerische Tätigkeit</option>
+            <option value="vortragend">Vortragende Tätigkeit</option>
+            <option value="wissenschaftlich">Wissenschaftliche Tätigkeit</option>
+            <option value="unterrichtend">Unterrichtende Tätigkeit</option>
+            <option value="erzieherisch">Erzieherische Tätigkeit</option>
+            <option value="sonstiges">Sonstiges</option>
+        </select>
+        <h3>Einnahmen:</h3>
+        <input type="number" id="einkuenfte" name="einkuenfte" required>
+        <h3>Kilometergeld (lt. Lohnkonto):</h3>
+        <input type="number" id="kilometergeld" name="kilometergeld" required>
+        <h3>Wareneinsatz:</h3>
+        <input type="number" id="wareneinsatz" name="wareneinsatz" required>
+        <h3>Löhne und Fremdlöhne</h3>
+        <input type="number" id="loehne" name="loehne" required>
+        <h3>Arbeitsplatzpauschale (groß/klein/nein):</h3>
+        <!-- Hilfesymbol neben der Arbeitsplatzpauschale -->
+        <span class="help-icon" onclick="openHelpPopup()">&#9432;</span>
+        <select id="arbeitsplatzpauschale_select" name="arbeitsplatzpauschale_select">
+            <option value="nein">Nein</option>
+            <option value="groß">Groß</option>
+            <option value="klein">Klein</option>
+        </select>
+        <div id="helpModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="quiz-container">
+                    <span class="close" onclick="closeHelpPopup()">&times;</span>
+                    <div class="question" id="question">1. Steht für die Tätigkeit ein anderer Raum außerhalb der Wohnung zur Verfügung?</div>
+                    <ul class="answers" id="answers">
+                        <li onclick="selectAnswer(this, 'Yes')">Yes</li>
+                        <li onclick="selectAnswer(this, 'No')">No</li>
+                    </ul>
+                    <button class="quiz-btn" id="next-btn" style="display: none;">Next</button>
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="berechnePauschalierung()">Berechnen</button>
+        <div id="ergebnis"></div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Andreas Pany</p>
+    </footer>
+    <!-- Toast Notification Import-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script>
+        function berechnePauschalierung() {
+            // Input-Werte abrufen
+            const einkuenfte = parseFloat(document.getElementById('einkuenfte').value) || 0;
+            const kilometergeld = parseFloat(document.getElementById('kilometergeld').value) || 0;
+            const wareneinsatz = parseFloat(document.getElementById('wareneinsatz').value) || 0;
+            const loehne = parseFloat(document.getElementById('loehne').value) || 0;
+            const kategorie_taetigkeit = document.getElementById('kategorie_taetigkeit').value;
+
+            // Durchschnittssatz initialisieren
+            let durchschnittssatz = 0.06; // 6% als Standardwert
+            // Höchstbetrag initialisieren
+            let hoechstbetrag = 13200; // Standard-Höchstbetrag
+
+            // Arbeitsplatzpauschale initialisieren
+            let arbeitsplatzpauschale = 0;
+            let pBA = 0;
+            let betriebsausgaben = 0;
+            let betriebseinnahmen = 0;
+            let gewinn = 0;
+
+            // Wenn die Kategorie "sonstiges" ist, dann ändere den Durchschnittssatz entsprechend
+            if (kategorie_taetigkeit === 'sonstiges') {
+                durchschnittssatz = 0.12; // 12%
+                hoechstbetrag = 26400; // Höchstens 26 400 €
+            }
+
+            // Beträge für Arbeitsplatzpauschale je nach Auswahl setzen
+            const arbeitsplatzpauschale_select = document.getElementById('arbeitsplatzpauschale_select').value;
+            if (arbeitsplatzpauschale_select === 'groß') {
+                arbeitsplatzpauschale = 1200; // 1200€ für groß
+            } else if (arbeitsplatzpauschale_select === 'klein') {
+                arbeitsplatzpauschale = 300; // 300€ für klein
+            } else if (arbeitsplatzpauschale_select === 'nein') {
+                arbeitsplatzpauschale = 0; // 0€ für nein
+            }
+
+            // Berechnung der Betriebsausgaben mit dem Durchschnittssatz
+            pBA = (einkuenfte -kilometergeld) * durchschnittssatz;
+            betriebsausgaben = kilometergeld + wareneinsatz + loehne + arbeitsplatzpauschale + pBA;
+            betriebseinnahmen = einkuenfte;
+            gewinn = betriebseinnahmen-betriebsausgaben;
+            // Meldung erstellen
+            toastr.info(`Betriebsausgaben: ${betriebsausgaben.toFixed(2)} €<br>Gewinn: ${gewinn.toFixed(2)} €`);
+        }
+
+        function openHelpPopup() {
+            document.getElementById("helpModal").style.display = "block";
+            // Make sure the quiz container is displayed when the modal is opened
+            document.querySelector(".quiz-container").style.display = "block";
+            // Add class to body to trigger blur effect
+            currentQuestionIndex = 0;
+            // Load the first question
+            loadQuestion();
+        }
+
+        function closeHelpPopup() {
+            document.getElementById("helpModal").style.display = "none";
+            // Reset current question index for next time the modal is opened
+            currentQuestionIndex = 0;
+        }
+
+        // Close the modal when the user clicks outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById("helpModal");
+            if (event.target == modal) {
+                closeHelpPopup();
+            }
+        }
+
+        // Quiz Data and Functions
+        const quizData = [
+            {
+                question: "Steht für die Tätigkeit ein anderer Raum außerhalb der Wohnung zur Verfügung?",
+                answers: ["Ja", "Nein"],
+                correct: "No",
+            },
+            {
+                question: "Beziehen der Klient daneben andere wesentliche Einkünfte aus einer aktiven Erwerbstätigkeit (über 11.000€ pro Jahr)?",
+                answers: ["Ja", "Nein"],
+                correct: "No",
+            }
+            // Add more questions here if needed
+        ];
+        let currentQuestionIndex = 0;
+
+        function loadQuestion() {
+            if (currentQuestionIndex < quizData.length) {
+                const currentQuestion = quizData[currentQuestionIndex];
+                document.getElementById('question').innerText = `${currentQuestionIndex + 1}. ${currentQuestion.question}`;
+                const answersHtml = currentQuestion.answers.map(answer =>
+                    `<li onclick="selectAnswer(this, '${answer}')">${answer}</li>`
+                ).join('');
+                document.getElementById('answers').innerHTML = answersHtml;
+            }
+        }
+
+        function selectAnswer(li, answer) {
+            if (currentQuestionIndex === 0) { // First question
+                if (answer === 'Ja') { // If answer is "Nein" for the first question
+                    document.getElementById('arbeitsplatzpauschale_select').value = "nein";
+                    closeHelpPopup();
+                } else { // If answer is "Ja", proceed to the next question
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }
+            } else if (currentQuestionIndex === 1) { // Second question
+                // Handle the answer for the second question
+                if (answer === 'Ja') {
+                    // If "Ja" for the second question, set to "klein"
+                    document.getElementById('arbeitsplatzpauschale_select').value = "klein";
+                } else {
+                    // Otherwise, set to "groß"
+                    document.getElementById('arbeitsplatzpauschale_select').value = "groß";
+                }
+                closeHelpPopup(); // Close the modal after handling the second question
+            }
+        }
+
+        // Ensure the next button works to go through the quiz
+        document.getElementById('next-btn').addEventListener('click', () => {
+            loadQuestion();
+        });
+    </script>
+</body>
+</html>
